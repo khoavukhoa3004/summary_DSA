@@ -3,25 +3,23 @@
 #include <iostream>
 
 template <typename T>
-class Node{
-   T data;
-   Node*pNext;
-public:
-   Node():pNext(NULL){}
-   Node(T dat, Node* next = NULL): data(dat), pNext(next){}
-   T getData(){return this->data;}
-   Node* getNext(){ return this->pNext;}
-   void setData(T dat){this->data = dat;}
-   void setNext(Node *next){this->pNext = next;}
-   friend class stack;
-   friend class queue;
-};
-
-template <typename T>
 class LinkedList{
+public:
+   class Node{
+      T data;
+      Node* pNext;
+      friend class LinkedList<T>;
+   public:
+      Node():pNext(NULL){}
+      Node(T dat, Node* next = NULL): data(dat), pNext(next){}
+      T getData(){return this->data;}
+      Node* getNext(){ return this->pNext;}
+      void setData(T dat){this->data = dat;}
+      void setNext(Node *next){this->pNext = next;}
+   };
 private:
-   Node<T>* pHead;
-   Node<T>* pTail;
+   Node* pHead;
+   Node* pTail;
    int count;
 public:
    LinkedList(): pHead(NULL), pTail(NULL), count(0){}
@@ -29,10 +27,16 @@ public:
    void add(T data, int index);
    void removeByIndex(int index);
    void removeByData(T data);
-   Node<T>* getNodeByIndex(int index);
-   Node<T>* getNodeByData(T data);
+   T getDataByIndex(int index);
+   T getTail(){
+      if(!pTail)
+         throw std::out_of_range("Segmentation fault!");
+      return pTail->data;
+   }
+   int find(T data);
    void clear();
    ~LinkedList(){clear();}
+   LinkedList<T>& operator=(LinkedList<T>& rhs);
 };
 
 template <typename T>
@@ -47,7 +51,14 @@ public:
    bool empty();
    int size(){return root.size();}
    void clear();
-   ~stack();
+   ~stack(){
+      root.clear();
+   }
+   stack& operator=(stack<T>& s)
+   {
+      this->root = s.root;
+      return *this;
+   }
 };
 
 template <typename T>
@@ -55,7 +66,7 @@ class queue{
 private: 
    LinkedList<T> root;
 public:
-   queue();
+   queue(){}
    void push(T data);
    void pop();
    T front();
@@ -63,6 +74,9 @@ public:
    bool empty(){return (root.size() == 0) ? true:false;}
    void clear();
    ~queue(){clear();}
-
+   queue& operator=(queue<T>& q){
+      this->root = q.root;
+      return *this;
+   }
 };
 #endif

@@ -1,5 +1,4 @@
 #include "stackqueue.h"
-
 /*
    method for class LinkedList.
 */
@@ -14,30 +13,30 @@ void LinkedList<T>::add(T data, int index)
       return;
    if(count == 0)
    {
-      pHead = new Node<T>(data);
+      this->pHead = new Node(data);
       pTail = pHead;
    }
    else if(index == count)
    {
-      pTail->pNext = new Node<T>(data);
+      pTail->pNext = new Node(data);
       pTail = pTail->pNext;
    }
    else
    {
-      Node<T> *temp = pHead;
+      Node *temp = pHead;
       while(index != 1 || index != 0)
       {
          temp = temp->pNext;
       }
       if(index == 0)
       {
-         temp = new Node<T>(data);
+         temp = new Node(data);
          temp->pNext = pHead;
          pHead = temp;
       }
       else
       {
-         Node<T> *newNode = new Node<T>(data);
+         Node *newNode = new Node(data);
          newNode->pNext = temp->pNext;
          temp->pNext = newNode;
       }
@@ -53,7 +52,7 @@ void LinkedList<T>::removeByData(T data)
    */
    if(count == 0)
       return;
-   Node<T>* temp = pHead;
+   Node* temp = pHead;
    while(temp)
    {
       if(temp->data == data)
@@ -64,16 +63,16 @@ void LinkedList<T>::removeByData(T data)
    }
    if(temp->data = data)
    {
-      Node<T>* removedNode = temp;
+      Node* removedNode = temp;
       pHead = pHead->pNext;
-      if(pTail == removedNode)
+      if(this->pTail == removedNode)
          pHead = pTail = NULL;
       delete removedNode;
       count -= 1;
    }
    else
    {
-      Node<T>* removedNode = temp->pNext;
+      Node* removedNode = temp->pNext;
       temp->pNext = temp->pNext->pNext;
       if(removedNode == pTail)
          pTail = temp;
@@ -89,6 +88,8 @@ void LinkedList<T>::removeByIndex(int index)
    - remove Node at index. 
    * Note: index must be in range [0; size -1]
    */
+   if(count == 0)
+      throw std::out_of_range("Segmentation fault!");
    if(index >= count || index < 0)
       return;
    if(index == 0)
@@ -100,7 +101,7 @@ void LinkedList<T>::removeByIndex(int index)
       }
       else
       {
-         Node<T>* temp = pHead;
+         Node* temp = pHead;
          pHead = pHead->pNext;
          temp->pNext = NULL;
          delete temp;
@@ -108,13 +109,13 @@ void LinkedList<T>::removeByIndex(int index)
    }
    else
    {
-      Node<T>* temp;
+      Node* temp = pHead;
       while(index != 1)
       {
          temp = temp->pNext;
          index -= 1;
       }
-      Node<T> *curr = temp->pNext;
+      Node *curr = temp->pNext;
       temp->pNext = temp->pNext->pNext;
       if(curr == pTail)
       {
@@ -126,36 +127,47 @@ void LinkedList<T>::removeByIndex(int index)
 }
 
 template <typename T>
-Node<T>* LinkedList<T>::getNodeByIndex(int index)
+T LinkedList<T>::getDataByIndex(int index)
 {
    /*
    - return Node at index. 
    * Note: index must be in range [0; size -1]
    */
    if(index >= count || index < 0)
-      return NULL;
-   Node<T> *temp = pHead;
+      throw std::out_of_range("Segmentation fault!");
+   Node *temp = pHead;
    while(index > 0)
    {
       temp = temp->pNext;
    }
-   return temp;
+   if(!temp)
+      throw std::out_of_range("Segmentation fault!");
+   return temp->data;
 }
 
 template <typename T>
-Node<T>* LinkedList<T>::getNodeByData(T data)
+int LinkedList<T>::find(T data)
 {
    /*
-   - get the first node which data = data. 
+   - return idx if found Node;
+   otherwise return -1
    */
-   Node<T> *temp = pHead;
+   int idx = -1;
+   Node* temp = pHead;
    while(temp)
    {
       if(temp->data == data)
+      {
+         idx += 1;
          break;
-      temp = temp->pNext;
+      }
+      else
+      {
+         idx += 1;
+         temp = temp->pNext;
+      }
    }
-   return temp;
+   return idx;
 }
 
 template <typename T>
@@ -165,7 +177,7 @@ void LinkedList<T>::clear()
    {
       if(pHead->pNext)
       {
-         Node<T>* temp = pHead;
+         Node* temp = pHead;
          pHead = pHead->pNext;
          delete temp;
       }
@@ -179,6 +191,27 @@ void LinkedList<T>::clear()
    count = 0;
 }
 
+template <typename T>
+LinkedList<T>& LinkedList<T>::operator=(LinkedList<T>& rhs)
+{
+   this->clear();
+   Node* temp = rhs.pHead;
+   while(temp)
+   {
+      if(this->pHead == NULL)
+      {
+         this->pHead = new Node(temp->data);
+         this->pTail = pHead;
+      }
+      else
+      {
+         this->pTail->pNext = new Node(temp->data);
+      }
+      temp = temp->pNext;
+   }
+   this->count = rhs.count;
+   return *this;
+}
 
 /*
    method for class stack
@@ -192,12 +225,14 @@ void stack<T>::push(T data)
 template <typename T>
 T stack<T>::top()
 {
-   return this->root.pTail->data;
+   return this->root.getTail();
 }
 
 template <typename T>
 void stack<T>::pop()
 {
+   if(this->root.size() == 0)
+      throw std::out_of_range("Segmentation fault!");
    this->root.removeByIndex(this->root.size() - 1);
 }
 
@@ -225,7 +260,7 @@ void queue<T>::push(T data)
 template <typename T>
 T queue<T>::front()
 {
-   return this->root.pHead->data;
+   return this->root.getDataByIndex(0);
 }
 
 template <typename T>
@@ -240,4 +275,21 @@ void queue<T>::clear()
    this->root.clear();
 }
 
-
+/*
+int main()
+{
+   queue<int> s;
+   s.push(5);
+   s.push(10);
+   s.push(7);
+   s.push(2);
+   s.push(15);
+   queue<int> q = s;
+   while(!q.empty())
+   {
+      std::cout<<q.front()<<" ";
+      q.pop();
+   }
+   return 0;
+}
+*/
